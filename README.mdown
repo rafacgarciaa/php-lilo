@@ -1,0 +1,8 @@
+# LILO
+
+A JavaScript/CoffeeScript concatenation tool for PHP inspired by [Sprockets] (https://github.com/sstephenson/sprockets) and based in [Snockets] (https://github.com/TrevorBurnham/snockets).
+
+LILO is a fast engine that allow you scan a file to extract the dependency graph. Later, with this graph (is a simple php array with every dependency founded) you can choose the better way of process them for deploy javascript code.
+
+## Usage
+
