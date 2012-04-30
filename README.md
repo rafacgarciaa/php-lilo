@@ -29,13 +29,16 @@ In your script:
 
 	$lilo = new Lilo(array(/* extensions */));
 
-The extensions allow to `Lilo` knows the types of files that must be processed.
+Lilo uses extensions to determine if a file should be processed or not.
 For example, for working with Javascript and CoffeeScript files:
 
 	require_once '../libs/diacronos/Lilo/Lilo.php';
 	use \diacronos\Lilo\Lilo;
 
 	$lilo = new Lilo(array('js', 'coffee'));
+
+The load path is an ordered list of directories that `Lilo` uses to search for files. These must be configured before to work with the library:
+
 	$lilo->appendPath('path/to/files/dependencies/1');
 	$lilo->appendPath('path/to/files/dependencies/2');
 	....
@@ -55,4 +58,4 @@ You can get an array of filenames and contents showing the series of dependencie
 The result is in the format `array(array('filename' => 'dependency1.js', 'content' => "// file dependency1.js content"), ...)`.
 
 ## Credits
-Lilo is PHP library inspired by [Sprockets] (https://github.com/sstephenson/sprockets) and based in [Snockets] (https://github.com/TrevorBurnham/snockets). All credits for them.
+Lilo is a PHP library inspired by [Sprockets] (https://github.com/sstephenson/sprockets) and based in [Snockets] (https://github.com/TrevorBurnham/snockets). All credits for them.
