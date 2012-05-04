@@ -24,7 +24,7 @@ Lilo supports the three Sprockets-style comments, for more information about the
 
 In your script:
 
-	require_once '../libs/diacronos/Lilo/Lilo.php';
+	require_once 'path/to/libs/diacronos/Lilo/Lilo.php';
 	use \diacronos\Lilo\Lilo;
 
 	$lilo = new Lilo(array(/* extensions */));
@@ -32,7 +32,7 @@ In your script:
 Lilo uses extensions to determine if a file should be processed or not.
 For example, for working with Javascript and CoffeeScript files:
 
-	require_once '../libs/diacronos/Lilo/Lilo.php';
+	require_once 'path/to/libs/diacronos/Lilo/Lilo.php';
 	use \diacronos\Lilo\Lilo;
 
 	$lilo = new Lilo(array('js', 'coffee'));
