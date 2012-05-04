@@ -74,11 +74,36 @@ use \diacronos\DepGraph\DepGraph;
 class Lilo
 {
 	/**
+	 * Directives will only be picked up if they are in the header
+	 * of the source file. C style multiline, JavaScript (//), and
+	 * CoffeeScript (#) comments (### ... ###, too) are supported.
+	 *
+	 * Directives in comments after the first non-whitespace line
+	 * of code will not be processed.
+	 *
 	 * @var string
 	 */
-	const HEADER = '/(?:(\#\#\#.*\#\#\#\n*)|(\/\/.*\n*)|(\#.*\n*))+/';
+	const HEADER = '/
+		\A (
+			(?m:\s*) (
+				(\/\* (?m:.*?) \*\/) |
+				(\#{3} (?m:.*?)\n\#{3}) |
+				(\/\/ .* \n?)+ |
+				(\# .* \n?)+
+			)
+		)+
+	/xs'; // x => ignora caracteres, s => . reconoce saltos de linea
 	
 	/**
+	 * Directives are denoted by a `=` followed by the name, then
+	 * argument list.
+	 *
+	 * A few different styles are allowed:
+	 *
+	 *     // =require foo
+	 *     //= require foo
+	 *     //= require "foo"
+	 *
 	 * @var string
 	 */
 	const DIRECTIVE = '@^[\W]*=\s*(\w+.*?)(\*\\\/)?$@m';
@@ -102,6 +127,11 @@ class Lilo
 	 * @var array
 	 */
 	private $_scanExcludes = array();
+	
+	/**
+	 * @var array
+	 */
+	private $_staticDependences = array();
 	
 	/**
 	 * Constructor
@@ -140,6 +170,36 @@ class Lilo
 	public function appendLoadPath($path)
 	{
 		$this->_fs->appendPath($path);
+	}
+	
+	/**
+	 * Sets the static dependences (must be skip the scan process)
+	 * @access  public
+	 * @params  string
+	 * @return  void
+	 */
+	public function addStaticDependences()
+	{
+		$args = func_get_args();
+		foreach ($args as $item) {
+			if (is_array($item)) {
+				foreach ($item as $dep) {
+					$this->_addDep($dep);
+				}
+			} elseif (is_string($item)) {
+				$this->_addDep($item);
+			}
+		}
+	}
+	
+	/**
+	 * Remove all the static dependences
+	 * @access  public
+	 * @return  void
+	 */
+	public function clearStaticDependences()
+	{
+		array_splice($this->_staticDependences, 0, count($this->_staticDependences));
 	}
 	
 	/**
@@ -243,6 +303,22 @@ class Lilo
 	public function getRegisteredExtensions()
 	{
 		return $this->_fs->getWorkExtensions();
+	}
+	
+	/**
+	 * Adds one item to static dependeces array 
+	 * @access  private
+	 * @param   string  $item
+	 * @return  void
+	 */
+	private function _addDep($item)
+	{
+		$pos = array_search($item, $this->_staticDependences);
+		if ($pos !== false) {
+			array_splice($this->_staticDependences, $item, 1);
+		}
+			
+		array_push($this->_staticDependences, $item);
 	}
 	
 	/**
@@ -356,7 +432,11 @@ class Lilo
 			}
 			
 			$this->_dep->add($keyPath, $depPath);
-			$this->scan($depPath);
+			
+			// static dependences
+			if (array_search($relPath, $this->_staticDependences) === false) {
+				$this->scan($depPath);
+			}
 		}
 	}
 	
@@ -404,7 +484,7 @@ class Lilo
 		if (preg_match(self::HEADER, $filecontent, $matches) == 0) {
 			return array();
 		}
-		
+
 		$header = $matches[0];
 		preg_match_all(self::DIRECTIVE, $header, $results);
 		
